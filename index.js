@@ -7,17 +7,13 @@ app.use(morgan('common'));
 
 const gapps = require('./playstore.js');
 
-app.listen(8000, () => {
-  console.log('server Started on Port 8000');
+app.listen(8080, () => {
+  console.log('server Started on Port 8080');
 });
 
 app.get('/apps', (req, res) => {
   const { sort, genres } = req.query;
-  if (sort) {
-    if (!['rating', 'app'].includes(sort)) {
-      return res.status(400).send('sort value must either be rating or app');
-    }
-  }
+  let results = gapps;
   if (genres) {
     if (
       !['Action', 'Puzzle', 'Strategy', 'Casual', 'Arcade', 'Card'].includes(
@@ -31,5 +27,21 @@ app.get('/apps', (req, res) => {
     }
   }
 
-  res.json(gapps);
+  if (sort) {
+    if (!['rating', 'app'].includes(sort.toLowerCase())) {
+      return res.status(400).send('sort value must either be rating or app');
+    }
+  }else {
+    sort = sort.toLowerCase();
+    if (sort === 'rating') {
+      sort = parseFloat(sort);
+    }
+   
+      results.sort((a, b) => {
+      return a[sort].toLowerCase() > b[sort].toLowerCase() ? 1 : a[sort].toLowerCase() < b[sort].toLowerCase() ? -1 : 0;
+   });
+
+  }
+
+  res.json(results);
 });
